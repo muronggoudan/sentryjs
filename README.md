@@ -1,0 +1,2 @@
+# sentryjs
+for application debug
