@@ -1,0 +1,27 @@
+{
+  "name": "sentryjs",
+  "version": "1.0.0",
+  "description": "debug for javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --open",
+    "build": "webpack"
+  },
+  "keywords": [
+    "debug",
+    "error",
+    "javascript"
+  ],
+  "author": "muronggoudan",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.1.5",
+    "babel-loader": "^8.0.4",
+    "html-webpack-plugin": "^3.2.0",
+    "vue": "^2.5.17",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  }
+}
