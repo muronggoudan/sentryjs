@@ -1,19 +1,14 @@
+// 工具类
+// @author muronggoudan
+// @date 2018-07-20
+
 import config from './config';
 
-export function report(message) {
-	const xhr = new XMLHttpRequest();
-  const reportPort = config.protocol.indexOf('https') > -1 ? config.httpsServerPort : config.httpServerPort;
-  const reportUrl = `${config.protocol}//${config.serverIP}:${reportPort}${config.path}`;
+// 上报方法
+export function report(url, message) {
   const reportParams = JSON.stringify(message);
-  
-  xhr.open('POST', reportUrl);
-  xhr.setRequestHeader('Content-type', 'application/json');
-  xhr.send(reportParams);
-  xhr.onreadystatechange = () => {
-  	if (4 === xhr.readyState && 200 === xhr.status) {
-    	console.log('[Sentry Log] : 异常上报成功');
-    }
-  };
+  const img4Report = new Image();
+  img4Report.src = encodeURIComponent(url + reportParams);
 }
 
 export function polyfill(obj, name, replacement) {
@@ -25,22 +20,27 @@ export function polyfill(obj, name, replacement) {
   obj[name].__orig__ = orig;
 }
 
+// 判断是不是function
 export function isFunction(fn) {
 	return typeof fn === 'function';
 }
 
+// 判断是不是undefined
 export function isUndefined(what) {
 	return what === void 0;
 }
 
+// 判断是不是string
 export function isString(what) {
 	return Object.prototype.toString.call(what) === '[object String]';
 }
 
+// hasOwnProperty
 export function hasKey(object, key) {
 	return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+// 格式化路径
 export function pathFormatter(path) {
 	return path.map((item) => {
   	if (window === item) return 'window';
@@ -50,6 +50,22 @@ export function pathFormatter(path) {
   });
 }
 
+// 简化版extend
 export function extend(obj1, obj2) {
 	return Object.assign({}, obj1, obj2);
+}
+
+// log
+export function log(message) {
+  console.log.call(console, `[Sentry Log] : ${message}`);
+}
+
+// warn
+export function warn(message) {
+  console.warn.call(console, `[Sentry Warning] : ${message}`);
+}
+
+// error
+export function error(message) {
+  console.error.call(console, `[Sentry Error] : ${message}`);
 }

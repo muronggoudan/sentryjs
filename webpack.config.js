@@ -1,18 +1,20 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-	entry: ['./index.js'],
-	// entry: ['./src/main.js'],
+	// entry: ['./index.js'],
+	entry: ['./src/main.js'],
   
   output: {
-  	filename: 'sentry.v1.0.0.js',
+  	filename: 'sentry.js',
     path: path.resolve(__dirname, 'dist'),
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
 
-  mode: 'development',
+  // mode: 'development',
+  mode: 'production',
   
   devtool: 'source-map',
   
@@ -30,7 +32,8 @@ module.exports = {
   },
   
   plugins: [
-  	new HtmlWebpackPlugin(),
+    // new HtmlWebpackPlugin(),
+    new CleanWebpackPlugin(['dist'])
   ]
 };
   

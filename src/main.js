@@ -19,13 +19,17 @@ let APIKEY = null;
 
 class Sentry {
 
+  static server = `${config.protocol}://${config.serverIP}:${config.httpsServerPort}`;
+  static path = config.path;
+  static enable;
+
 	constructor (options = {}) {
 		this.options = options;
 		
 		// apikey特殊处理
 		// @TODO 健壮性校验
 		if (!options.apikey) {
-			console.warn('[Sentry Warning] : 没有apikey无法开启监控');
+			warn('apikey缺失, 无法开启监控');
 			return;
 		}
 	
@@ -58,9 +62,27 @@ class Sentry {
 		// xhr 模块
 		xhrModel.init();
 		
-	}
+  }
+  
+  mergeOptions (options) {
+    // @TODO 严格校验
+
+    if (options.server) {
+      this.server = options.server;
+    }
+
+    if (options.path) {
+      this.path = options.path;
+    }
+
+    if (options.module) {
+      this.enable = extend(config.sentryGlobalConfig, options.module);
+    } else {
+      this.enable = config.sentryGlobalConfig;
+    }
+  }
 	
-	// 安装Vue监听插件s
+	// 安装Vue监听插件
 	installVuePlugin (Vue) {
 		const vuePluginModel = new VuePluginModel();
 		vuePluginModel.vuePlugin(Vue, vuePluginModel.send);
@@ -69,13 +91,13 @@ class Sentry {
 	// 主动上报错误
 	send (message) {
 		if (!message) {
-			console.warn('[Sentry Warning] : 上报失败，参数为空');
+			warn('上报失败, 参数为空');
 			return;
 		}
 	
 		// @TODO 普通对象校验不严谨
-		if ('object' !== typeof message) {
-			console.warn('[Sentry Warning] : 上报失败，参数必须为普通对象');
+		if ('[object Object]' !== Object.prototype.toString.call(message)) {
+			warn('上报失败, 参数必须为普通对象');
 			return;
 		}
 		
@@ -131,33 +153,17 @@ class CommonModel {
 		}, true);
 	}
   
-  send (...args) {
-  	
+  send (message) {
     // @TODO 上报评率和条数控制
-    // @TODO 通用信息合并
     
     const commonMsg = this.getCommonReportMessage();
-    args = args.map((item) => {
+    const url = Sentry.server + Sentry.path;
+    message = [message].map((item) => {
     	return extend(item, commonMsg);
     });
     
-    return report.apply(this, args);
+    return report.call(this, url, message);
   }
-  
-  // 日志打印
-	log () {
-  
-  }
-  
-  // 警告打印
-  warn () {
-  
-  }
-  
-  // 用于处理插件本身错误
-  captureErrors () {
-		
-	}
   
   getCommonReportMessage () {
   	const apikey = APIKEY;

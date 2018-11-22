@@ -1,9 +1,9 @@
-// import { Sentry } from './src/main';
-import Sentry from 'sentryjs';
+import { Sentry } from './src/main';
+// import Sentry from 'sentryjs';
 import Vue from 'vue/dist/vue.min';
 
 const sentryInstance = new Sentry({
-	apikey: 'xxx'
+	// apikey: 'xxx'
 });
 
 sentryInstance.installVuePlugin(Vue);
