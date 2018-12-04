@@ -15,31 +15,28 @@ import {
 
 import config from './config';
 
-let APIKEY = null;
-
 class Sentry {
 
+  // 上报服务地址
   static server = `${config.protocol}://${config.serverIP}:${config.httpsServerPort}`;
+  // 上报接口地址
   static path = config.path;
+  // 使能
   static enable;
+  // 鉴权key
+  static apikey;
 
 	constructor (options = {}) {
+    // 配置项
 		this.options = options;
-		
-		// apikey特殊处理
-		// @TODO 健壮性校验
-		if (!options.apikey) {
-			warn('apikey缺失, 无法开启监控');
-			return;
-		}
-	
-		APIKEY = options.apikey;
-		
+    
+    this.mergeOptions();
 		this.init();
 	}
-	
+  
+  // 入口方法
 	init () {
-	
+  
 		const commonModel = new CommonModel();
 		const xhrModel = new XHRModel();
 		const httpModel = new HttpModel();
@@ -64,9 +61,19 @@ class Sentry {
 		
   }
   
+  // 合并选项
   mergeOptions (options) {
+    
     // @TODO 严格校验
 
+		// apikey特殊处理
+		// @TODO 健壮性校验
+		if (!options.apikey) {
+			warn('apikey缺失, 无法开启监控');
+			return;
+		}
+    this.apikey = options.apikey;
+	
     if (options.server) {
       this.server = options.server;
     }
@@ -166,7 +173,7 @@ class CommonModel {
   }
   
   getCommonReportMessage () {
-  	const apikey = APIKEY;
+  	const apikey = Sentry.apikey;
     const version = config.version;
     const url = window.location ? window.location.href ? window.location.href : '' : '';
     const title = window.document ? window.document.title ? window.document.title : '' : '';

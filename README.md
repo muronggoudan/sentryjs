@@ -50,3 +50,12 @@
 1. vueMessage
 2. lifecycleHook
 3. componentName
+
+#### Interface
+- [server]\:可选   
+  上报服务地址
+- [path]\:可选   
+  上报接口路径
+- [module]\:可选   
+  模块使能
+
