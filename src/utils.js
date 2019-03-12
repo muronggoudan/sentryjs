@@ -4,7 +4,7 @@
 
 import config from './config';
 
-// 上报方法
+// 上报信息工具方法
 export function report(url, message) {
   const reportParams = JSON.stringify(message);
   const img4Report = new Image();
@@ -33,6 +33,10 @@ export function isUndefined(what) {
 // 判断是不是string
 export function isString(what) {
 	return Object.prototype.toString.call(what) === '[object String]';
+}
+
+export function isPlainObject(what) {
+	return Object.prototype.toString.call(what) === '[object Object]';
 }
 
 // hasOwnProperty

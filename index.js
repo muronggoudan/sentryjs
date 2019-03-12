@@ -3,7 +3,10 @@ import { Sentry } from './src/main';
 import Vue from 'vue/dist/vue.min';
 
 const sentryInstance = new Sentry({
-	// apikey: 'xxx'
+  apikey: 'xxx',
+  module: {
+    enable: false,
+  }
 });
 
 sentryInstance.installVuePlugin(Vue);
@@ -49,3 +52,9 @@ createVue();
 // var XHR = new XMLHttpRequest();
 // XHR.open('GET', 'getNothing');
 // XHR.send();
+
+// Promise test
+// (function () {
+//   Promise.reject('uncaugth promise error');
+// })();
+

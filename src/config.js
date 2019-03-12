@@ -6,13 +6,13 @@ export default {
 
   // 版本信息
   // 用于平台信息展示兼容
-	version: '1.0.0',
+	version: '1.0.1',
   
   // 平台协议
 	protocol: 'https',
   
   // 平台ip
-	serverIP: '10.35.93.100',
+	server: '10.35.93.100',
   
   // 平台端口
 	httpsServerPort: '8090',
@@ -22,11 +22,11 @@ export default {
   
   // 模块默认使能开关
 	sentryGlobalConfig: {
-		enable:   true,
+    enable:   true,
 		window:   true,
 		http:     true,
 		xhr:      true,
-		vue:      true,
+    promise:  true,
 	},
   
   // 上报错误类型字典

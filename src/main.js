@@ -10,7 +10,10 @@ import {
 	isString,
 	hasKey,
 	pathFormatter,
-	extend,
+  extend,
+  log,
+  warn,
+  error,
 } from './utils';
 
 import config from './config';
@@ -18,7 +21,7 @@ import config from './config';
 class Sentry {
 
   // 上报服务地址
-  static server = `${config.protocol}://${config.serverIP}:${config.httpsServerPort}`;
+  static server = `${config.protocol}://${config.server}:${config.httpsServerPort}`;
   // 上报接口地址
   static path = config.path;
   // 使能
@@ -30,34 +33,39 @@ class Sentry {
     // 配置项
 		this.options = options;
     
-    this.mergeOptions();
+    this.mergeOptions(options);
 		this.init();
 	}
   
   // 入口方法
 	init () {
+    
+    if (!this.enable.enable) return;
   
-		const commonModel = new CommonModel();
-		const xhrModel = new XHRModel();
-		const httpModel = new HttpModel();
-		const windowModel = new WindowModel();
+		let commonModel;
+		let httpModel;
+    let windowModel;
+
+    commonModel = new CommonModel();
+
+    this.enable.http && (httpModel = new HttpModel());
+    this.enable.window && (windowModel = new WindowModel());
+    this.enable.xhr && (new XHRModel());
+    this.enable.promise && (new PromiseModel());
 		
 		// window 模块安装
-		commonModel.install(
+		windowModel && commonModel.install(
 			windowModel.errorType,
 			windowModel.valid,
 			windowModel.callback
 		);
 			
 		// http 模块安装
-		commonModel.install(
+		httpModel && commonModel.install(
 			httpModel.errorType,
 			httpModel.valid,
 			httpModel.callback
-		);
-	
-		// xhr 模块
-		xhrModel.init();
+    );
 		
   }
   
@@ -103,7 +111,7 @@ class Sentry {
 		}
 	
 		// @TODO 普通对象校验不严谨
-		if ('[object Object]' !== Object.prototype.toString.call(message)) {
+		if (!isPlainObject(message)) {
 			warn('上报失败, 参数必须为普通对象');
 			return;
 		}
@@ -116,11 +124,11 @@ class Sentry {
   
 }
 
-
+// 公共类
 class CommonModel {
 	
 	constructor () {
-		// 捕获不同类型多错误
+		// 存放捕获器
 		this.stack = [];
 		this.addErrorEventListener();
 	}
@@ -160,23 +168,30 @@ class CommonModel {
 		}, true);
 	}
   
+  // 上报
   send (message) {
-    // @TODO 上报评率和条数控制
+    // @TODO 上报频率和条数控制
     
     const commonMsg = this.getCommonReportMessage();
-    const url = Sentry.server + Sentry.path;
-    message = [message].map((item) => {
+    const url = `${Sentry.server}${Sentry.path}`;
+    message = [ message ].map((item) => {
     	return extend(item, commonMsg);
     });
-    
+
     return report.call(this, url, message);
   }
   
+  // 通用信息获取
   getCommonReportMessage () {
-  	const apikey = Sentry.apikey;
+    // apikey
+    const apikey = Sentry.apikey;
+    // 版本信息
     const version = config.version;
+    // url
     const url = window.location ? window.location.href ? window.location.href : '' : '';
+    // 网页title
     const title = window.document ? window.document.title ? window.document.title : '' : '';
+    // 浏览器UA
     const userAgent = window.navigator ? window.navigator.userAgent ? window.navigator.userAgent : '' : '';
     
     return {
@@ -212,6 +227,7 @@ class VuePluginModel extends CommonModel {
     );
   }
   
+  // vue插件
   vuePlugin (Vue, callback) {
   	const _this = this;
     
@@ -295,7 +311,8 @@ class HttpModel extends CommonModel {
     this.errorType = 'ResourceError';
   }
   
-  // 目前无法确切判断资源引用对象是谁
+  // 目前无法确切判断资源引用对象 但绝大部分不是window
+  // 支持img/link/script等标签
   valid (errorEvent) {
   	return errorEvent.target !== window;
   }
@@ -323,27 +340,33 @@ class HttpModel extends CommonModel {
 
 // Promise模块
 // 未处理的catch错误
-class Promise extends CommonModel {
+class PromiseModel extends CommonModel {
   constructor () {
-    spuer();
+    super();
     this.install();
   }
 
   install () {
     window.addEventListener('unhandledrejection', (errorEvent) => {
-        this.callback(errorEvent);
+      this.callback(errorEvent);
     });
   }
 
-  callback () {
+  callback (errorEvent) {
     const type = config.typeDict.promise;
+    // 拒因
     const rejectionReason = errorEvent.reason;
-    const rejectionDetail = errorEvent.toString();
+    // promise其他信息
+    const promiseDetail = {
+      returnValue: errorEvent.returnValue,
+      timeStamp: errorEvent.timeStamp,
+      type: errorEvent.type,
+    }
 
     const _errorMessageForReport = {
-        type,
+      type,
       rejectionReason,
-      rejectionDetail,
+      promiseDetail,
     };
 
     this.send(_errorMessageForReport);
@@ -354,7 +377,8 @@ class Promise extends CommonModel {
 class XHRModel extends CommonModel {
 
 	constructor () {
-  	super();
+    super();
+    this.init();
   }
   
   init () {
@@ -442,7 +466,7 @@ class XHRModel extends CommonModel {
     // const crumb = extend({
     //   timestamp: now() / 1000
     // },
-    // obj
+    //   obj
     // );
     const type = config.typeDict.xhr;
     const method = obj.data.method;
