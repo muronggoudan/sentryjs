@@ -8,7 +8,7 @@ import config from './config';
 export function report(url, message) {
   const reportParams = JSON.stringify(message);
   const img4Report = new Image();
-  img4Report.src = encodeURIComponent(url + reportParams);
+  img4Report.src = `${url}?${encodeURIComponent(reportParams)}`;
 }
 
 export function polyfill(obj, name, replacement) {

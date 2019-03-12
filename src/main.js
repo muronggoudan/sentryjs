@@ -80,16 +80,16 @@ class Sentry {
 			warn('apikey缺失, 无法开启监控');
 			return;
 		}
-    this.apikey = options.apikey;
+    Sentry.apikey = options.apikey;
 	
     if (options.server) {
-      this.server = options.server;
+      Sentry.server = options.server;
     }
 
     if (options.path) {
-      this.path = options.path;
+      Sentry.path = options.path;
     }
-
+    
     if (options.module) {
       this.enable = extend(config.sentryGlobalConfig, options.module);
     } else {
@@ -178,7 +178,7 @@ class CommonModel {
     	return extend(item, commonMsg);
     });
 
-    return report.call(this, url, message);
+    return report(url, message);
   }
   
   // 通用信息获取

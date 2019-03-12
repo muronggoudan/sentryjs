@@ -1,11 +1,14 @@
-import { Sentry } from './src/main';
+// import { Sentry } from './src/main';
+import { Sentry } from 'sentryjs';
 // import Sentry from 'sentryjs';
 import Vue from 'vue/dist/vue.min';
 
 const sentryInstance = new Sentry({
   apikey: 'xxx',
+  server: 'http://10.22.22.22',
+  path: '/server',
   module: {
-    enable: false,
+    // enable: false,
   }
 });
 
@@ -44,17 +47,17 @@ createVue();
 // console.log(someVarUndefined);
 
 // async test
-// window.onclick = function () {
-//   console.log(asyncError);
-// };
+window.onclick = function () {
+  console.log(asyncError);
+};
 
 // xhr test
-// var XHR = new XMLHttpRequest();
-// XHR.open('GET', 'getNothing');
-// XHR.send();
+var XHR = new XMLHttpRequest();
+XHR.open('GET', 'getNothing');
+XHR.send();
 
 // Promise test
-// (function () {
-//   Promise.reject('uncaugth promise error');
-// })();
+(function () {
+  Promise.reject('uncaugth promise error');
+})();
 

@@ -3,8 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-	// entry: ['./index.js'],
-	entry: ['./src/main.js'],
+	entry: ['./index.js'],
+	// entry: ['./src/main.js'],
   
   output: {
   	filename: 'sentry.js',
@@ -32,7 +32,7 @@ module.exports = {
   },
   
   plugins: [
-    // new HtmlWebpackPlugin(),
+    new HtmlWebpackPlugin(),
     new CleanWebpackPlugin(['dist'])
   ]
 };
