@@ -9,11 +9,13 @@ import {
 	isUndefined,
 	isString,
 	hasKey,
-	pathFormatter,
+  pathFormatter,
+  isPlainObject,
   extend,
   log,
   warn,
   error,
+  debounce,
 } from './utils';
 
 import config from './config';
@@ -21,20 +23,24 @@ import config from './config';
 class Sentry {
 
   // 上报服务地址
-  static server = `${config.protocol}://${config.server}:${config.httpsServerPort}`;
+  static server;
   // 上报接口地址
-  static path = config.path;
+  static path;
   // 使能
   static enable;
-  // 鉴权key
+  // 鉴权apikey
   static apikey;
+  // 等待
+  static delay;
 
 	constructor (options = {}) {
     // 配置项
-		this.options = options;
+    this.options = options;
+    // 通用模块
+    this.commonModel = null;
     
-    this.mergeOptions(options);
-		this.init();
+    return this.mergeOptions(options) ? 
+      this.init() : null;
 	}
   
   // 入口方法
@@ -42,52 +48,55 @@ class Sentry {
     
     if (!this.enable.enable) return;
   
-		let commonModel;
 		let httpModel;
     let windowModel;
 
-    commonModel = new CommonModel();
-
+    this.commonModel = new CommonModel();
     this.enable.http && (httpModel = new HttpModel());
     this.enable.window && (windowModel = new WindowModel());
     this.enable.xhr && (new XHRModel());
     this.enable.promise && (new PromiseModel());
 		
 		// window 模块安装
-		windowModel && commonModel.install(
+		windowModel && this.commonModel.install(
 			windowModel.errorType,
 			windowModel.valid,
 			windowModel.callback
 		);
 			
 		// http 模块安装
-		httpModel && commonModel.install(
+		httpModel && this.commonModel.install(
 			httpModel.errorType,
 			httpModel.valid,
 			httpModel.callback
     );
-		
+    
+    return this;
   }
   
   // 合并选项
   mergeOptions (options) {
-    
-    // @TODO 严格校验
-
-		// apikey特殊处理
-		// @TODO 健壮性校验
 		if (!options.apikey) {
-			warn('apikey缺失, 无法开启监控');
-			return;
-		}
-    Sentry.apikey = options.apikey;
+			warn('apikey缺失, 无法开启错误监控。');
+			return false;
+		} else {
+      Sentry.apikey = options.apikey;
+    }
 	
-    if (options.server) {
+    if (!options.server || !options.path) {
+			warn('server或者path配置不存在, 无法上报错误信息。');
+			return false;
+    } else {
       Sentry.server = options.server;
+      Sentry.path = options.path;
     }
 
-    if (options.path) {
-      Sentry.path = options.path;
+    if (options.delay && options.delay !== true) {
+      Sentry.delay = Number(options.delay);
+    } else if (options.delay === 0 || options.delay === false) {
+      Sentry.delay = 0;
+    } else {
+      Sentry.delay = config.delay;
     }
     
     if (options.module) {
@@ -95,6 +104,8 @@ class Sentry {
     } else {
       this.enable = config.sentryGlobalConfig;
     }
+
+    return true;
   }
 	
 	// 安装Vue监听插件
@@ -105,19 +116,16 @@ class Sentry {
  	
 	// 主动上报错误
 	send (message) {
-		if (!message) {
-			warn('上报失败, 参数为空');
-			return;
-		}
-	
-		// @TODO 普通对象校验不严谨
-		if (!isPlainObject(message)) {
-			warn('上报失败, 参数必须为普通对象');
+    // 插件关闭的情况
+    if (!this.commonModel) return;
+
+		if (!message || !isPlainObject(message)) {
+			warn('上报失败, 上报信息必须为普通对象。');
 			return;
 		}
 		
 		this.commonModel.send({
-			type: confog.typeDoct.diy,
+			type: config.typeDict.diy,
 			metaData: message,
 		});
   }
@@ -129,7 +137,19 @@ class CommonModel {
 	
 	constructor () {
 		// 存放捕获器
-		this.stack = [];
+    this.stack = [];
+    // 存放错误信息缓存
+    this.messagesCache = [];
+    this.reporter = debounce(() => {
+      const commonMsg = this.getCommonReportMessage();
+      const url = `${Sentry.server}${Sentry.path}`;
+      this.messagesCache = this.messagesCache.map((item) => {
+        return extend(item, commonMsg);
+      });
+  
+      report(url, this.messagesCache);
+    }, Sentry.delay);
+
 		this.addErrorEventListener();
 	}
 	
@@ -170,15 +190,8 @@ class CommonModel {
   
   // 上报
   send (message) {
-    // @TODO 上报频率和条数控制
-    
-    const commonMsg = this.getCommonReportMessage();
-    const url = `${Sentry.server}${Sentry.path}`;
-    message = [ message ].map((item) => {
-    	return extend(item, commonMsg);
-    });
-
-    return report(url, message);
+    this.messagesCache.push(message);
+    this.reporter();
   }
   
   // 通用信息获取
@@ -462,7 +475,7 @@ class XHRModel extends CommonModel {
   }
 
   captureErrorRequest (obj) {
-    // @TODO 相应时间
+    // @TODO 响应时间
     // const crumb = extend({
     //   timestamp: now() / 1000
     // },

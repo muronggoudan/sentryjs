@@ -8,7 +8,7 @@ import config from './config';
 export function report(url, message) {
   const reportParams = JSON.stringify(message);
   const img4Report = new Image();
-  img4Report.src = `${url}?${encodeURIComponent(reportParams)}`;
+  img4Report.src = `${url}?_=${encodeURIComponent(reportParams)}`;
 }
 
 export function polyfill(obj, name, replacement) {
@@ -54,6 +54,11 @@ export function pathFormatter(path) {
   });
 }
 
+// 是否在浏览器中
+export function inBrowser() {
+  return typeof window !== 'undefined' && typeof document !== 'undefined';
+}
+
 // 简化版extend
 export function extend(obj1, obj2) {
 	return Object.assign({}, obj1, obj2);
@@ -72,4 +77,18 @@ export function warn(message) {
 // error
 export function error(message) {
   console.error.call(console, `[Sentry Error] : ${message}`);
+}
+
+// 防抖函数
+export function debounce(fn, wait) {
+  let scheduled = false;
+  return (...args) => {
+    if (!scheduled) {
+      scheduled = true;
+      setTimeout(() => {
+        scheduled = false;
+        fn.apply(this, args);
+      }, wait);
+    }
+  };
 }

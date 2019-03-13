@@ -1,5 +1,5 @@
-// import { Sentry } from './src/main';
-import { Sentry } from 'sentryjs';
+import { Sentry } from '../src/main.js';
+// import { Sentry } from 'sentryjs';
 // import Sentry from 'sentryjs';
 import Vue from 'vue/dist/vue.min';
 
@@ -9,10 +9,15 @@ const sentryInstance = new Sentry({
   path: '/server',
   module: {
     // enable: false,
-  }
+  },
+  delay: 100,
 });
 
 sentryInstance.installVuePlugin(Vue);
+
+sentryInstance.send({
+
+})
 
 const createElm = function() {
 	const elm = document.createElement('div');

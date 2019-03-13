@@ -8,18 +8,6 @@ export default {
   // 用于平台信息展示兼容
 	version: '1.0.1',
   
-  // 平台协议
-	protocol: 'https',
-  
-  // 平台ip
-	server: '10.35.93.100',
-  
-  // 平台端口
-	httpsServerPort: '8090',
-  
-  // 错误上报路径
-	path: '/overseaFE/record/save',
-  
   // 模块默认使能开关
 	sentryGlobalConfig: {
     enable:   true,
@@ -37,6 +25,9 @@ export default {
 		xhr:      '003',
 		vue:      '004',
 		promise:  '005',
-  }
+  },
+
+  // 等待时间
+  delay: 1000,
   
 }
