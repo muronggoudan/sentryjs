@@ -1,5 +1,5 @@
-import { Sentry } from '../src/main.js';
-// import { Sentry } from 'sentryjs';
+// import { Sentry } from '../src/main.js';
+import { Sentry } from 'sentryjs';
 // import Sentry from 'sentryjs';
 import Vue from 'vue/dist/vue.min';
 
@@ -10,7 +10,7 @@ const sentryInstance = new Sentry({
   module: {
     // enable: false,
   },
-  delay: 1000,
+  delay: 100,
 });
 
 sentryInstance.installVuePlugin(Vue);

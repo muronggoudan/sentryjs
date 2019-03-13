@@ -30,6 +30,6 @@
     "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
-    "sentryjs": "^1.0.3"
+    "sentryjs": "^1.0.4"
   }
 }
