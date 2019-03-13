@@ -5,10 +5,15 @@
 import config from './config';
 
 // 上报信息工具方法
+// @TODO 为防止信息丢失 可以监听onload方法
 export function report(url, message) {
-  const reportParams = JSON.stringify(message);
-  const img4Report = new Image();
-  img4Report.src = `${url}?_=${encodeURIComponent(reportParams)}`;
+  return new Promise((resolve) => {
+    const reportParams = JSON.stringify(message);
+    const img4Report = new Image();
+    img4Report.src = `${url}?_=${encodeURIComponent(reportParams)}&_t=${new Date().getTime()}`;
+
+    resolve();
+  })
 }
 
 export function polyfill(obj, name, replacement) {

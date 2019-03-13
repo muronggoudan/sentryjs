@@ -146,8 +146,11 @@ class CommonModel {
       this.messagesCache = this.messagesCache.map((item) => {
         return extend(item, commonMsg);
       });
-  
-      report(url, this.messagesCache);
+      
+      // 上报成功清空缓存
+      report(url, this.messagesCache).then(() => {
+        this.messagesCache.splice(0);
+      });
     }, Sentry.delay);
 
 		this.addErrorEventListener();

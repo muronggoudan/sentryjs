@@ -10,7 +10,7 @@ const sentryInstance = new Sentry({
   module: {
     // enable: false,
   },
-  delay: 100,
+  delay: 1000,
 });
 
 sentryInstance.installVuePlugin(Vue);
