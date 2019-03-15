@@ -141,8 +141,8 @@ class CommonModel {
     // 存放错误信息缓存
     this.messagesCache = [];
     this.reporter = debounce(() => {
-      const commonMsg = this.getCommonReportMessage();
-      const url = `${Sentry.server}${Sentry.path}`;
+      let commonMsg = this.getCommonReportMessage();
+      let url = `${Sentry.server}${Sentry.path}`;
       this.messagesCache = this.messagesCache.map((item) => {
         return extend(item, commonMsg);
       });
